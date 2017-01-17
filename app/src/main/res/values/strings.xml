@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Kanu s.a.M. App</string>
+    <string name="ip">Bitte geben Sie hier die IP-Adresse des Servers ein:</string>
+    <string name="verbinden">Verbinden</string>
+    <string name="beschriftung_Station">Bitte wählen Sie Ihre Messstation aus, wenn Sie Strafzeiten eintragen möchten!</string>
+    <string name="anweisung_Auswahl_Startnummer">Bitte wählen Sie die Startnummer aus, welche die Messstation erreicht hat, und drücken Sie den Button \"Zeit nehmen\".</string>
+    <string name="zeit_nehmen">Zeit nehmen!</string>
+    <string name="alle_Werte_eingetragen">Die Zeiten für alle Startnummern sind eingetragen. Vielen Dank für die Benutzung der Android Connector App HTTP!</string>
+    <string name="waehlen">Wählen!</string>
+    <string name="information_Eingabe_Strafe">Strafsekunden:</string>
+    <string name="startnummer">Startnummer:</string>
+    <string name="tor">Tor:</string>
+    <string name="ip_start">192.168.1.234</string>
+    <string name="info_starten_stoppen">Oder nutzen Sie die App zum Starten oder Stoppen von Startnummern!</string>
+    <string name="start">Starten!</string>
+    <string name="stopp">Stoppen!</string>
+    <string name="info_start_Activity">Wählen Sie eine Startnummer aus dem Spinner aus und tippen Sie auf \"Starten\"!</string>
+    <string name="info_stoppen_text">Bitte wählen Sie eine Startnummer aus dem Spinner aus und tippen Sie auf \"Stoppen\"!</string>
+</resources>

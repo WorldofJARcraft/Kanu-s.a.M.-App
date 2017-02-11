@@ -77,39 +77,10 @@ public class HTTP_Connection extends AsyncTask<String, Void, String> {
         boolean keineFehler = true;
         //Initialisierung eines StringBuilders
         StringBuilder sb = new StringBuilder();
-
-        //prüfen, ob die übergebene IP erreichbar ist
-        try {
-            //IP-Adresse als InetAddress speichern
-            InetAddress inet = InetAddress.getByName(this.orurl);
-            //prüfen, ob die IP auf Ping reagiert, Timeout: 1 s
-            if (!(inet.isReachable(1000))) {
-                //fals nicht: Abbruch, Rückgabe, dass ein Fehler aufgetreten ist
-                ConnectionActivity.CONNECTION_ERROR = true;
-                keineFehler = false;
-                System.out.println("Adresse unerreichbar!");
-                return null;
-            }
-        } catch (UnknownHostException e) {
-            //aufgerufen, wenn Host nicht gefunden wurde (kann nicht eintreten, da IP's aufgelöste Hosts sind)
-            //sollte Fehler auftreten: Rückgabe, dass ein Fehler aufgetreten ist, und Abbruch
-            System.out.println("HostException gecatcht!");
-            e.printStackTrace();
-
-            ConnectionActivity.CONNECTION_ERROR = true;
-            keineFehler = false;
-            return null;
-
-        } catch (IOException e) {
-            //fängt allgemeinen Fehler bei der obigen Überprüfung, gibt Fehler zurück und bricht ab
-            e.printStackTrace();
-            ConnectionActivity.CONNECTION_ERROR = true;
-            keineFehler = false;
-            return null;
-        }
         //versuchen, Script zu starten und Daten davon auszulesen
         try {
             if (keineFehler) {
+                System.out.println("Versuche, Anfrage an "+url+" zu senden!");
                 //String data = URLEncoder.encode("authkey", "UTF-8") + "=" + URLEncoder.encode(AUTHKEY, "UTF-8");
                 //übergebene Abrufadresse in eine URL umwandeln
                 URL url = new URL(this.url);

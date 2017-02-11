@@ -16,4 +16,10 @@
     <string name="stopp">Stoppen!</string>
     <string name="info_start_Activity">Wählen Sie eine Startnummer aus dem Spinner aus und tippen Sie auf \"Starten\"!</string>
     <string name="info_stoppen_text">Bitte wählen Sie eine Startnummer aus dem Spinner aus und tippen Sie auf \"Stoppen\"!</string>
+    <string name="aktualisieren">Aktualisieren!</string>
+    <string-array name="spinner_standard">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
 </resources>

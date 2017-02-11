@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_start"
     android:layout_width="match_parent"
@@ -8,7 +11,8 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="de.ackermann.eric.androidconnectorapphttp.StartActivity">
+    tools:context="de.ackermann.eric.androidconnectorapphttp.StartActivity"
+    android:orientation="vertical">
 
     <TextView
         android:text="@string/info_start_Activity"
@@ -19,6 +23,16 @@
         android:layout_alignParentStart="true"
         android:id="@+id/info_starten"
         android:textSize="@dimen/textview_text_size" />
+
+    <TextView
+        android:text="TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/info_starten"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="19dp"
+        android:id="@+id/lauf_start" />
 
     <Spinner
         android:layout_width="match_parent"
@@ -31,22 +45,16 @@
 
     <Button
         android:text="@string/start"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
         android:id="@+id/starter"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-
-    <TextView
-        android:text="TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/info_starten"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="19dp"
-        android:id="@+id/lauf_start" />
-</RelativeLayout>
+        android:layout_alignParentStart="true" />
+    <Button
+        android:text="@string/aktualisieren"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/aktualisierenStart" />
+</LinearLayout>
+</ScrollView>

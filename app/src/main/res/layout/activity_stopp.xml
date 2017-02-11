@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_stopp"
     android:layout_width="match_parent"
@@ -8,7 +11,8 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="de.ackermann.eric.androidconnectorapphttp.StoppActivity">
+    tools:context="de.ackermann.eric.androidconnectorapphttp.StoppActivity"
+    android:orientation="vertical">
 
     <TextView
         android:text="@string/info_stoppen_text"
@@ -20,16 +24,15 @@
         android:id="@+id/info_stoppen"
         android:textSize="@dimen/textview_text_size" />
 
-    <Button
-        android:text="@string/stopp"
+    <TextView
+        android:text="TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/info_stoppen"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/stoppButton"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_marginTop="25dp"
+        android:id="@+id/lauf_stopp" />
 
     <Spinner
         android:layout_width="match_parent"
@@ -40,13 +43,20 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
-    <TextView
-        android:text="TextView"
-        android:layout_width="wrap_content"
+    <Button
+        android:text="@string/stopp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/info_stoppen"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="25dp"
-        android:id="@+id/lauf_stopp" />
-</RelativeLayout>
+        android:id="@+id/stoppButton"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+    <Button
+        android:text="@string/aktualisieren"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/aktualisierenStopp" />
+</LinearLayout>
+</ScrollView>

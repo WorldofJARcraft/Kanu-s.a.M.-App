@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -101,5 +102,18 @@ public class StoppActivity extends AppCompatActivity {
                 }
             }
         });
+        /**
+         * Button, der die Anzeige aktualisiert.
+         */
+        Button aktualisieren = (Button) findViewById(R.id.aktualisierenStopp);
+        aktualisieren.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Activity wird beendet und neu gestartet
+                finish();
+                startActivity(getIntent());
+            }
+        });
     }
+
 }

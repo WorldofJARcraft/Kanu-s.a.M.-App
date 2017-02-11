@@ -261,6 +261,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Verbindung zum Server kann nicht hergestellt werden: Netzwerk nicht verfügbar!", Toast.LENGTH_LONG).show();
 
         }
+        /**
+         * Button, der die Anzeige aktualisiert.
+         */
+        Button aktualisieren = (Button) findViewById(R.id.aktualisierenButton);
+        aktualisieren.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Activity wird beendet und neu gestartet
+                finish();
+                startActivity(getIntent());
+            }
+        });
     }
 
     /**
@@ -435,6 +447,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 */
+
     /**
      * speichert, ob gerade per PHP-Script abgefragt wurde, ob der Wettkampf schon gestartet ist
      */

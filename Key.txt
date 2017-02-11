@@ -1,0 +1,12 @@
+Keystore.jks
+-------------------------------------------------------------------------------------------
+Password: uzrfgrfger347868734giutg
+-------------------------------------------------------------------------------------------
+Key Alias: Kanu s.a.M. Key
+Password Key: qearwe4tergdrtherzhedgh
+-------------------------------------------------------------------------------------------
+First and Last Name: Eric Ackermann
+Organization: World of JARcraft
+City: Greiz
+State: Thuringia
+Country Code: DE

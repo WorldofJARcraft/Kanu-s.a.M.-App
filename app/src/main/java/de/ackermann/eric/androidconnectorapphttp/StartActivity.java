@@ -103,6 +103,18 @@ public class StartActivity extends AppCompatActivity {
                 }
             }
         });
+        /**
+         * Button, der die Anzeige aktualisiert.
+         */
+        Button aktualisieren = (Button) findViewById(R.id.aktualisierenStart);
+        aktualisieren.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Activity wird beendet und neu gestartet
+                finish();
+                startActivity(getIntent());
+            }
+        });
     }
 }
 

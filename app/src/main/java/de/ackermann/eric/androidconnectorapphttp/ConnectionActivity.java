@@ -120,11 +120,11 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                                     //Spinner anzeigen
                                     s.setVisibility(View.VISIBLE);
                                     //Verbindung hergestellt --> Button "Verbinden" führt nun keine Aktionen mehr aus
-                                    Button verbinden = (Button) findViewById(R.id.verbinden_button);
-                                    verbinden.setOnClickListener(null);
+                                    //Button verbinden = (Button) findViewById(R.id.verbinden_button);
+                                    //verbinden.setOnClickListener(null);
                                     //zur Sicherheit: KeyListener der IP-Eingabe wird auch genullt
-                                    EditText ip = (EditText) findViewById(R.id.ip_Eingabe);
-                                    ip.setKeyListener(null);
+                                    //EditText ip = (EditText) findViewById(R.id.ip_Eingabe);
+                                    //ip.setKeyListener(null);
                                     //Button zur Anmeldung an die Messstation anzeigen
                                     wahl.setVisibility(View.VISIBLE);
                                     //Anzeigen der Buttons zum Eintragen

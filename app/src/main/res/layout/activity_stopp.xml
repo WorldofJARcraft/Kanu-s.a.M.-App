@@ -6,7 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_stopp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -18,41 +18,28 @@
         android:text="@string/info_stoppen_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
         android:id="@+id/info_stoppen"
         android:textSize="@dimen/textview_text_size" />
 
     <TextView
-        android:text="TextView"
+        android:text="@string/dummy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/info_stoppen"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
         android:layout_marginTop="25dp"
-        android:id="@+id/lauf_stopp" />
+        android:id="@+id/lauf_stopp"
+        android:textSize="16sp" />
 
     <Spinner
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="75dp"
-        android:id="@+id/startnummer_stopp"
-        android:layout_below="@+id/info_stoppen"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:id="@+id/startnummer_stopp" />
 
     <Button
         android:text="@string/stopp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:id="@+id/stoppButton"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:id="@+id/stoppButton" />
     <Button
         android:text="@string/aktualisieren"
         android:layout_width="match_parent"

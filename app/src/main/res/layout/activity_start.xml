@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/Kanu_s.a.M.">
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_start"
@@ -12,14 +13,8 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="de.ackermann.eric.androidconnectorapphttp.StartActivity"
-    android:orientation="vertical">
-
-    <TextView
-        android:text="@string/info_start_Activity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/info_starten"
-        android:textSize="@dimen/textview_text_size" />
+    android:orientation="vertical"
+    android:background="@color/Kanu_s.a.M.">
 
     <TextView
         android:text="@string/dummy"
@@ -29,6 +24,13 @@
         android:id="@+id/lauf_start"
         android:textSize="16sp" />
 
+    <TextView
+        android:id="@+id/info_starten"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/info_start_Activity"
+        android:textSize="@dimen/textview_text_size" />
+
     <Spinner
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -36,14 +38,19 @@
         android:id="@+id/startnummer_start" />
 
     <Button
-        android:text="@string/start"
+        android:id="@+id/starter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/starter" />
+        android:background="@android:color/transparent"
+        android:drawableLeft="@drawable/start"
+        android:text="@string/start" />
+
     <Button
-        android:text="@string/aktualisieren"
+        android:id="@+id/aktualisierenStart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/aktualisierenStart" />
+        android:background="@android:color/transparent"
+        android:drawableLeft="@drawable/reload"
+        android:text="@string/aktualisieren" />
 </LinearLayout>
 </ScrollView>

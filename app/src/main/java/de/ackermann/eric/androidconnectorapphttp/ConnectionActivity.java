@@ -12,11 +12,14 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.w3c.dom.Text;
+
+import static de.ackermann.eric.androidconnectorapphttp.R.color.gruen_255;
 /*
 Quellen:
     http://stackoverflow.com/questions/6558364/android-development-toggling-textview-visibility
@@ -61,7 +64,7 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
             @Override
             public void onClick(View view) {
                 //EditText zur IP-Eingabe adressieren...
-                EditText ip = (EditText) findViewById(R.id.ip_Eingabe);
+                final EditText ip = (EditText) findViewById(R.id.ip_Eingabe);
                 //... und die eingegebene IP einlesen
                 IP_ADRESSE = ip.getText().toString();
                 //Wenn die IP-Adresse gültig ist...
@@ -78,6 +81,10 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                                 //speichert, ob Fehler aufgetreten sind
                                 boolean verbunden = true;
                                 int stationen = 0;
+                                if(output == null){
+                                    Toast.makeText(context, "Verbindung zum Host "+ip.getText()+" nicht möglich!", Toast.LENGTH_LONG).show();
+                                //... und speichern, dass Fehler aufgetreten sind
+                                verbunden = false;}
                                 //Zahl der Stationen speichern
                                 Stationen = output;
                                 //versuchen, das übermittelte Resultat in eine ganzzahl umzuwandeln
@@ -131,6 +138,12 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                                     findViewById(R.id.startButton).setVisibility(View.VISIBLE);
                                     findViewById(R.id.stoppButton).setVisibility(View.VISIBLE);
                                     findViewById(R.id.info_Start_Stopp).setVisibility(View.VISIBLE);
+                                    //Button "verbinden" wird zu Button "neu verbinden"
+                                    Button verbinden = (Button) findViewById(R.id.verbinden_button);
+                                    verbinden.setText("Neu verbinden");
+                                    ((TextView) findViewById(R.id.status)).setText("Verbunden \n mit "+ip.getText());
+                                    ((TextView) findViewById(R.id.status)).setTextColor(getResources().getColor(gruen_255));
+                                    ((ImageView) findViewById(R.id.statusbild)).setImageDrawable(getResources().getDrawable(R.drawable.verbunden));
                                 }
                             }
                         };
@@ -183,6 +196,7 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                             if (output.equals("false")) {
                                 gestartet = false;
                             }
+                            gestartet = true;
                             //Startzeit soll ermittelt werden
                             abfrageStartzeit=true;
                             //Startzeit abfragen
@@ -206,9 +220,9 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                                             CONNECTION_ERROR=true;
                                             System.out.println(output+" ist keine long.");
                                             //Fehler aufgetreten
-                                            noerror=false;
+                                            noerror=true;
                                             //Fehlermeldung ausgeben
-                                            Toast.makeText(context, "Der Wettkampf ist noch nicht gestartet und Sie können noch keine Zeiten eintragen oder ein Netzwerkfehler ist aufgetreten. Bitte überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es später erneut!", Toast.LENGTH_LONG).show();
+                                            //Toast.makeText(context, "Der Wettkampf ist noch nicht gestartet und Sie können noch keine Zeiten eintragen oder ein Netzwerkfehler ist aufgetreten. Bitte überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es später erneut!", Toast.LENGTH_LONG).show();
                                         }
                                         System.out.println("Startzeit: "+startzeit);
                                         //nur bei erfolgreicher Verbindung...

@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class StartActivity extends AppCompatActivity {
     private boolean spinnerleer = true;
@@ -89,6 +90,7 @@ public class StartActivity extends AppCompatActivity {
         findViewById(R.id.starter).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                boolean[] erfolg = {false};
                 if (isNetworkAvailable()) {
                     //wenn ja: neue Instanz von HTTP_Connection erstellen, die das Script "Abfrage_Startnummern" ausführt und so alle Startnummern aus der Datenbank ausliest
                     HTTP_Connection conn = new HTTP_Connection("http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Startzeit_eintragen.php?startnummer="+s.getSelectedItem().toString(), true, ConnectionActivity.IP_ADRESSE, getBaseContext());
@@ -97,9 +99,20 @@ public class StartActivity extends AppCompatActivity {
                     conn.delegate = new AsyncResponse() {
                         @Override
                         public void processFinish(String output) {
+                            //Skript gibt "Erfolg!" aus, wenn korrekt eingetragen --> dann Erfolgsmeldung ausgeben, sonst nicht
+                            System.out.println("Antwort auf Startanfrage: "+output);
+                            if(output.equals("Erfolg!")){
+                                Toast.makeText(StartActivity.this,"Startnummer "+s.getSelectedItem().toString()+" erfolgreich gestartet!",Toast.LENGTH_SHORT).show();
+                            }
+                            else{
+                                Toast.makeText(StartActivity.this,"Beim Start von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!",Toast.LENGTH_SHORT).show();
+                            }
                         }
                     };
                     conn.execute("params");
+                }
+                else{
+                    Toast.makeText(StartActivity.this,"Beim Stoppen von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!",Toast.LENGTH_SHORT).show();
                 }
             }
         });

@@ -36,7 +36,7 @@ public class HTTP_Connection extends AsyncTask<String, Void, String> {
      */
     private String orurl;
     //maximale Wiederholungen. Default 10.
-    int mMaxRetries = 10;
+    int mMaxRetries = 3;
     /**
      * Hauptkonstruktor der Klasse. Maximalzahl an Verbindungsversuchen ist 10.
      *

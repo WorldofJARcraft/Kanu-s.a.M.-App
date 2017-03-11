@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class StoppActivity extends AppCompatActivity {
     private boolean spinnerleer = true;
@@ -96,9 +97,21 @@ public class StoppActivity extends AppCompatActivity {
                     conn.delegate = new AsyncResponse() {
                         @Override
                         public void processFinish(String output) {
+                            //Skript gibt "Erfolg" zurück, wenn Daten eingetragen --> prüfen, ob vorliegt
+                            if(output.equals("Erfolg!")){
+                                //wenn ja: Erfolgsmeldung
+                                Toast.makeText(StoppActivity.this,"Startnummer "+s.getSelectedItem().toString()+" erfolgreich gestoppt!",Toast.LENGTH_SHORT).show();
+                            }
+                            else{
+                                //sonst: Fehlermeldung
+                                Toast.makeText(StoppActivity.this,"Beim Stoppen von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!",Toast.LENGTH_SHORT).show();
+                            }
                         }
                     };
                     conn.execute("params");
+                }
+                else{
+                    Toast.makeText(StoppActivity.this,"Beim Stoppen von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!",Toast.LENGTH_SHORT).show();
                 }
             }
         });

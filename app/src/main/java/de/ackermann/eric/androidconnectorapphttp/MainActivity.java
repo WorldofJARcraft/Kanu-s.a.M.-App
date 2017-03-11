@@ -1,6 +1,7 @@
 package de.ackermann.eric.androidconnectorapphttp;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -15,8 +16,11 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Exchanger;
 
 /*
@@ -41,7 +45,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String[] arraySpinner2;
 
     private Spinner[] strafen;
-
+    /**
+     * Name der Preferences
+     */
+    private String PREFS_NAME = "Strafen";
     private TextView[] tore;
     /**
      * Wird beim Start des Activitys ausgeführt
@@ -512,10 +519,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (isNetworkAvailable()) {
                     //Position des ausgewählten Items im Spinner = seine Position in ArraySpinner
                     //--> ausgewählte Startnummer ist der Wert an dieser Position
-                    String gewählte_Nummer = arraySpinner[s.getSelectedItemPosition()];
+                    final String gewählte_Nummer = arraySpinner[s.getSelectedItemPosition()];
                     //ermitteln, für welche Station der Wert eingetragen werden soll
                     int Station = ConnectionActivity.gewählteStation;
-
+                    /**
+                     * Speichert, ob die Anfrage angekommen ist
+                     */
+                    final boolean[] erfolg = {false};
+                    /**
+                     * Speichert alle HTTP-Requests
+                     */
+                    final List<String> anfragen = new ArrayList<>();
                     /*
                     //ArraySpinner in Linked´List konvertieren...
                     List<String> liste = new LinkedList<String>(Arrays.asList(arraySpinner));
@@ -552,21 +566,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         //Prüfen, dass auch ja eine korrekte Zuordnung existiert
                         if (Integer.parseInt(strafe) != -1) {
                             //Anfrage zusammensetzen
-                            String request = "http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/zeit_eintragen.php?station=" + (Integer.parseInt(tor)-1)
+                            final String request = "http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/zeit_eintragen.php?station=" + (Integer.parseInt(tor)-1)
                                     + "&startnummer=" + (Integer.parseInt(gewählte_Nummer)) + "&strafe=" + strafe;
+                            //Zugriff auf Speicherdaten der App
+                            SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                            //Liste der abzusendenden Anfragen ermitteln...
+                            String zuErledigen = settings.getString("Strafen", "");
+                            //... und die aktuelle Anfrage hinzufügen
+                            zuErledigen+="|"+request;
+                            //Anfragen werden gespeichert, um später löschen zu können
+                            anfragen.add(request);
+                            //Speichern des geänderten Werts
+                            SharedPreferences.Editor editor = settings.edit();
+                            editor.putString("Strafen", zuErledigen);
+
+                            // Commit the edits!
+                            editor.commit();
                             //"zeit_eintragen.php" aufrufen, um die aktuelle Zeit für die gewählte Startnummer zu nehmen
-                            HTTP_Connection conn = new HTTP_Connection(request, false, ConnectionActivity.IP_ADRESSE, getBaseContext());
+                            final HTTP_Connection conn = new HTTP_Connection(request, true, ConnectionActivity.IP_ADRESSE, getBaseContext());
                             System.out.println("Versuche, Zeit einzutragen mit " + request);
                             //delegate darf nicht null sein, deshalb wird wieder die aktuelle Klasse aufgerufen, aber da initialisieren auf false steht, wird hier keine weitere Verarbeitung vorgenommen
                             conn.delegate = new AsyncResponse() {
                                 @Override
                                 public void processFinish(String output) {
+                                    //Antwort vom Skript ist da
+                                    System.out.println("Hallo");
+                                    //angekommen...
+                                    if(output.equals("Erfolg")){
+                                        erfolg[0] = true;
+                                        //... --> Anfrage von Liste streichen
+                                        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                                        String zuErledigen = settings.getString("Strafen", "");
+                                        zuErledigen= zuErledigen.substring(0,zuErledigen.indexOf(anfragen.get(0))-1)+zuErledigen.substring(zuErledigen.indexOf(anfragen.get(0))+anfragen.get(0).length());
+                                        anfragen.remove(0);
+                                        SharedPreferences.Editor editor = settings.edit();
+                                        editor.putString("Strafen", zuErledigen);
+                                        // Commit the edits!
+                                        editor.commit();
+                                    }
+                                    //Erfolgs- oder Fehlermeldung
+                                    if(erfolg[0]){
+                                        Toast.makeText(MainActivity.this,"Starfzeiten für Startnummer "+gewählte_Nummer+" erfolgreich eingetragen!",Toast.LENGTH_SHORT).show();
+                                    }
+                                    else{
+                                        Toast.makeText(MainActivity.this,"Beim Eintragen von Strafzeiten für Startnummer "+gewählte_Nummer+" ist ein Fehler aufgetreten!",Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                             };
                             //Abfrage starten
                             conn.execute("params");
                         }
                     }
+
                 } else {
                     //Fehlermeldung, da keine Verbindung möglich
                     Toast.makeText(this, "Verbindung zum Server kann nicht hergestellt werden: Netzwerk nicht verfügbar!", Toast.LENGTH_LONG).show();
@@ -596,5 +647,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Der Wettkampf ist noch nicht gestartet und Sie können noch keine Zeiten eintragen oder ein Netzwerkfehler ist aufgetreten. Bitte überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es später erneut!", Toast.LENGTH_LONG).show();
             //zuerst prüfen, ob schon Werte eingetragen werden können
         }
+    }
+
+    /**
+     * Wird beim Beenden des Activitys aufgerufen
+     */
+    @Override
+    public void onDestroy()
+    {
+        //Vernichtung
+        super.onDestroy();
+        //alle gespeicherten Anfragen löschen, damit nicht mit erneutem Start interferieren
+        SharedPreferences myPrefs = this.getSharedPreferences(PREFS_NAME,0);
+        myPrefs.edit().remove("Strafen");
+        myPrefs.edit().clear();
+        myPrefs.edit().commit();
     }
 }

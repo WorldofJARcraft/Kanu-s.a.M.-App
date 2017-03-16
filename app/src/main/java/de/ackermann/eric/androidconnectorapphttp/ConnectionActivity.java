@@ -45,6 +45,10 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
     private Context context;
     public static long startzeit=System.currentTimeMillis();
     /**
+     * Differenz zwischen Systemzeit und Laptopzeit
+     */
+    public static long zeitdiff = 0;
+    /**
      * Methode, die bei Erstellung des Activities aufgerufen wird
      *
      * @param savedInstanceState
@@ -144,6 +148,28 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                                     ((TextView) findViewById(R.id.status)).setText("Verbunden \n mit "+ip.getText());
                                     ((TextView) findViewById(R.id.status)).setTextColor(getResources().getColor(gruen_255));
                                     ((ImageView) findViewById(R.id.statusbild)).setImageDrawable(getResources().getDrawable(R.drawable.verbunden));
+                                    final long syszeit = System.currentTimeMillis();
+                                    HTTP_Connection conn = new HTTP_Connection("http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/getZeit.php", true, ConnectionActivity.IP_ADRESSE, getBaseContext());
+                                    //Ergebnis der Abfrage an diese Klasse liefern
+                                    conn.delegate = new AsyncResponse() {
+                                        @Override
+                                        public void processFinish(String output) {
+                                            System.out.println("Anfrageergebnis: "+output);
+                                            String[] teile = output.split("\\.");
+                                            try {
+                                                long aktZeit = (Long.parseLong(teile[0])*1000+Long.parseLong(teile[1]));
+                                                zeitdiff = aktZeit - (syszeit+1200);
+                                            } catch (NumberFormatException e) {
+                                                //Startzeit kann nicht in Zahl umgewandelt werden --> nur bei Verbindungsfehler möglich, da diese Methode nur aufgerufen wird, falls eine Startzeit existiert
+                                                CONNECTION_ERROR = true;
+                                                System.out.println(output + " ist keine long.");
+                                                //Fehler aufgetreten
+                                                //Fehlermeldung ausgeben
+                                                //Toast.makeText(context, "Der Wettkampf ist noch nicht gestartet und Sie können noch keine Zeiten eintragen oder ein Netzwerkfehler ist aufgetreten. Bitte überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es später erneut!", Toast.LENGTH_LONG).show();
+                                            }
+                                        }
+                                    };
+                                    conn.execute("params");
                                 }
                             }
                         };

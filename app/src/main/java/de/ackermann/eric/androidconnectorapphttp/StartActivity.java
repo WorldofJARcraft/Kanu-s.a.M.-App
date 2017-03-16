@@ -1,6 +1,7 @@
 package de.ackermann.eric.androidconnectorapphttp;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -13,7 +14,13 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class StartActivity extends AppCompatActivity {
+    /**
+     * Name der Preferences
+     */
+    private String PREFS_NAME = "Startzeiten";
     private boolean spinnerleer = true;
 
     /**
@@ -90,12 +97,28 @@ public class StartActivity extends AppCompatActivity {
         findViewById(R.id.starter).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                final String request = "http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Startzeit_eintragen.php?startnummer="+s.getSelectedItem().toString()+"&timestamp="+(System.currentTimeMillis()+ConnectionActivity.zeitdiff);
                 boolean[] erfolg = {false};
                 if (isNetworkAvailable()) {
+                    final ArrayList<String> anfragen = new ArrayList<>();
+                    //Zugriff auf Speicherdaten der App
+                    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                    //Liste der abzusendenden Anfragen ermitteln...
+                    String zuErledigen = settings.getString("Startzeiten", "");
+                    //... und die aktuelle Anfrage hinzufügen
+                    zuErledigen+="|"+request;
+                    //Anfragen werden gespeichert, um später löschen zu können
+                    anfragen.add(request);
+                    //Speichern des geänderten Werts
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("Startzeiten", zuErledigen);
+
+                    // Commit the edits!
+                    editor.commit();
                     //wenn ja: neue Instanz von HTTP_Connection erstellen, die das Script "Abfrage_Startnummern" ausführt und so alle Startnummern aus der Datenbank ausliest
-                    HTTP_Connection conn = new HTTP_Connection("http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Startzeit_eintragen.php?startnummer="+s.getSelectedItem().toString(), true, ConnectionActivity.IP_ADRESSE, getBaseContext());
+                    HTTP_Connection conn = new HTTP_Connection(request, true, ConnectionActivity.IP_ADRESSE, getBaseContext());
                     //Ergebnis der Abfrage an diese Klasse liefern
-                    System.out.println("Versuche, zu starten mit: "+"http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Startzeit_eintragen.php?startnummer="+s.getSelectedItem().toString());
+                    System.out.println("Versuche, zu starten mit: "+request);
                     conn.delegate = new AsyncResponse() {
                         @Override
                         public void processFinish(String output) {
@@ -103,6 +126,15 @@ public class StartActivity extends AppCompatActivity {
                             System.out.println("Antwort auf Startanfrage: "+output);
                             if(output.equals("Erfolg!")){
                                 Toast.makeText(StartActivity.this,"Startnummer "+s.getSelectedItem().toString()+" erfolgreich gestartet!",Toast.LENGTH_SHORT).show();
+                                //... --> Anfrage von Liste streichen
+                                SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                                String zuErledigen = settings.getString("Startzeiten", "");
+                                zuErledigen= zuErledigen.substring(0,zuErledigen.indexOf(anfragen.get(0))-1)+zuErledigen.substring(zuErledigen.indexOf(anfragen.get(0))+anfragen.get(0).length());
+                                anfragen.remove(0);
+                                SharedPreferences.Editor editor = settings.edit();
+                                editor.putString("Startzeiten", zuErledigen);
+                                // Commit the edits!
+                                editor.commit();
                             }
                             else{
                                 Toast.makeText(StartActivity.this,"Beim Start von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!",Toast.LENGTH_SHORT).show();
@@ -128,6 +160,20 @@ public class StartActivity extends AppCompatActivity {
                 startActivity(getIntent());
             }
         });
+    }
+    /**
+     * Wird beim Beenden des Activitys aufgerufen
+     */
+    @Override
+    public void onDestroy()
+    {
+        //Vernichtung
+        super.onDestroy();
+        //alle gespeicherten Anfragen löschen, damit nicht mit erneutem Start interferieren
+        SharedPreferences myPrefs = this.getSharedPreferences(PREFS_NAME,0);
+        myPrefs.edit().remove("Startzeiten");
+        myPrefs.edit().clear();
+        myPrefs.edit().commit();
     }
 }
 

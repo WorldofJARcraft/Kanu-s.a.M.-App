@@ -51,6 +51,7 @@ public class HTTP_Connection extends AsyncTask<String, Void, String> {
         resultatweitergeben = delegate;
         orurl = url;
     }
+    public static int timeoutmillis = 1000;
     /**
      * Zusätzlicher Konstruktor, in dem man eine Maximalzahl an versuchen übergeben kann.
      *
@@ -87,6 +88,8 @@ public class HTTP_Connection extends AsyncTask<String, Void, String> {
                 System.out.println(url.toString());
                 //Verbindung herstellen
                 URLConnection conn = url.openConnection();
+                //Timeout
+                conn.setConnectTimeout(timeoutmillis);
                 //HTML-Seite soll ausgegeben und  an den Client geschickt werden
                 conn.setDoOutput(true);
                 //BufferedReader zum Einlesen der Website initialisieren

@@ -1,6 +1,7 @@
 package de.ackermann.eric.androidconnectorapphttp;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -13,9 +14,16 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class StoppActivity extends AppCompatActivity {
     private boolean spinnerleer = true;
 
+    /**
+     * Name der Preferences
+     */
+    private String PREFS_NAME = "Zielzeiten";
     /**
      * Prüft, ob das Netzwerk verfügbar ist. Benötigt "android.permission.ACCESS_NETWORK_STATE".
      *
@@ -89,11 +97,27 @@ public class StoppActivity extends AppCompatActivity {
         findViewById(R.id.stoppButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                final String request = "http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Zielzeit_eintragen.php?startnummer="+s.getSelectedItem().toString()+"&timestamp="+(System.currentTimeMillis()+ConnectionActivity.zeitdiff);
+                final List<String> anfragen = new ArrayList<>();
                 if (isNetworkAvailable()) {
+                    //Zugriff auf Speicherdaten der App
+                    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                    //Liste der abzusendenden Anfragen ermitteln...
+                    String zuErledigen = settings.getString("Zielzeiten", "");
+                    //... und die aktuelle Anfrage hinzufügen
+                    zuErledigen+="|"+request;
+                    //Anfragen werden gespeichert, um später löschen zu können
+                    anfragen.add(request);
+                    //Speichern des geänderten Werts
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("Zielzeiten", zuErledigen);
+
+                    // Commit the edits!
+                    editor.commit();
                     //wenn ja: neue Instanz von HTTP_Connection erstellen, die das Script "Abfrage_Startnummern" ausführt und so alle Startnummern aus der Datenbank ausliest
-                    HTTP_Connection conn = new HTTP_Connection("http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Zielzeit_eintragen.php?startnummer="+s.getSelectedItem().toString(), true, ConnectionActivity.IP_ADRESSE, getBaseContext());
+                    HTTP_Connection conn = new HTTP_Connection(request, true, ConnectionActivity.IP_ADRESSE, getBaseContext());
                     //Ergebnis der Abfrage an diese Klasse liefern
-                    System.out.println("Versuche, zu starten mit: "+"http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Startzeit_eintragen.php?startnummer="+s.getSelectedItem().toString());
+                    System.out.println("Versuche, zu starten mit: "+request);
                     conn.delegate = new AsyncResponse() {
                         @Override
                         public void processFinish(String output) {
@@ -101,6 +125,16 @@ public class StoppActivity extends AppCompatActivity {
                             if(output.equals("Erfolg!")){
                                 //wenn ja: Erfolgsmeldung
                                 Toast.makeText(StoppActivity.this,"Startnummer "+s.getSelectedItem().toString()+" erfolgreich gestoppt!",Toast.LENGTH_SHORT).show();
+                                //... --> Anfrage von Liste streichen
+                                SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                                String zuErledigen = settings.getString("Zielzeiten", "");
+                                zuErledigen= zuErledigen.substring(0,zuErledigen.indexOf(anfragen.get(0))-1)+zuErledigen.substring(zuErledigen.indexOf(anfragen.get(0))+anfragen.get(0).length());
+                                anfragen.remove(0);
+                                SharedPreferences.Editor editor = settings.edit();
+                                editor.putString("Zielzeiten", zuErledigen);
+                                // Commit the edits!
+                                editor.commit();
+
                             }
                             else{
                                 //sonst: Fehlermeldung
@@ -128,5 +162,18 @@ public class StoppActivity extends AppCompatActivity {
             }
         });
     }
-
+    /**
+     * Wird beim Beenden des Activitys aufgerufen
+     */
+    @Override
+    public void onDestroy()
+    {
+        //Vernichtung
+        super.onDestroy();
+        //alle gespeicherten Anfragen löschen, damit nicht mit erneutem Start interferieren
+        SharedPreferences myPrefs = this.getSharedPreferences(PREFS_NAME,0);
+        myPrefs.edit().remove("Zielzeiten");
+        myPrefs.edit().clear();
+        myPrefs.edit().commit();
+    }
 }

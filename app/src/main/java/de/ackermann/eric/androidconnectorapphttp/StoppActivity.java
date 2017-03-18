@@ -49,7 +49,7 @@ public class StoppActivity extends AppCompatActivity {
             //Ergebnis der Abfrage an diese Klasse liefern
             conn.delegate = new AsyncResponse() {
                 @Override
-                public void processFinish(String output) {
+                public void processFinish(String output, long durationMillis) {
                     if (spinnerleer) {
                         spinnerleer = false;
                         System.out.println("Startnummern: " + output);
@@ -84,7 +84,7 @@ public class StoppActivity extends AppCompatActivity {
             //Ergebnis der Abfrage an diese Klasse liefern
             conn3.delegate = new AsyncResponse() {
                 @Override
-                public void processFinish(String output) {
+                public void processFinish(String output, long durationMillis) {
                     TextView lauf = (TextView) findViewById(R.id.lauf_stopp);
                     try{
                         lauf.setText("Lauf: "+(Integer.parseInt(output)+1));}
@@ -120,7 +120,7 @@ public class StoppActivity extends AppCompatActivity {
                     System.out.println("Versuche, zu starten mit: "+request);
                     conn.delegate = new AsyncResponse() {
                         @Override
-                        public void processFinish(String output) {
+                        public void processFinish(String output, long durationMillis) {
                             //Skript gibt "Erfolg" zurück, wenn Daten eingetragen --> prüfen, ob vorliegt
                             if(output.equals("Erfolg!")){
                                 //wenn ja: Erfolgsmeldung

@@ -67,6 +67,7 @@ public class HTTP_Connection extends AsyncTask<String, Void, String> {
         orurl = url;
         this.mMaxRetries = mMaxRetries;
     }
+    private long duration = 0;
     /**
      * Methode, welche die Verbindung zur Webseite herstellt und den Content ausliest. Wird wiederholt, bis die Maximalzahl an versuchen überschritten wird oder eine Antwort eintrifft.
      * @param params unnötige Parameter
@@ -96,7 +97,11 @@ public class HTTP_Connection extends AsyncTask<String, Void, String> {
                 BufferedReader reader;
                 try {
                     //conn streamt nun die aufgerufene Website, welche ein BufferedReader aufnimmt
+                    long connectionStart = System.currentTimeMillis();
                     reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    long connectionEnd = System.currentTimeMillis();
+                    System.out.println("Übertragungszeit: "+(connectionEnd-connectionStart));
+                    duration = connectionEnd-connectionStart;
                 } catch (RuntimeException e) {
                     //allgemeiner Fehler beim Abruf aufgetreten --> Fehler zurückgeben und abbrechen
                     ConnectionActivity.CONNECTION_ERROR = true;
@@ -174,7 +179,7 @@ public class HTTP_Connection extends AsyncTask<String, Void, String> {
             //Prozedur processFinish des Interface "AsyncResponse" aufrufen --> dieses ist abstrakt und muss von einer Klasse implementiert werden;
             //delegate muss zudem jene Klasse zugewiesen sein --> dann wird void in dieser Klasse ausgeführt, dem der Inhalt der Website übergeben wird,
             //und so ist der Inhalt der Website in dieser Klasse verfügbar
-            delegate.processFinish(result);
+            delegate.processFinish(result,duration);
             System.out.println("Ergebnis:" + result);
         }
         System.out.println("Ergebnis: "+result);

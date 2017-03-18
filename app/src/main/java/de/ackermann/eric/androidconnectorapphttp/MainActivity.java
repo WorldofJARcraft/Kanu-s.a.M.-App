@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Ergebnis der Abfrage an diese Klasse liefern
             conn.delegate = new AsyncResponse() {
                 @Override
-                public void processFinish(String output) {
+                public void processFinish(String output, long durationMillis) {
                     if (spinnerleer) {
                         spinnerleer = false;
                         System.out.println("Startnummern: " + output);
@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Ergebnis der Abfrage an diese Klasse liefern
             conn2.delegate = new AsyncResponse() {
                 @Override
-                public void processFinish(String output) {
+                public void processFinish(String output, long durationMillis) {
                     if (spinner2leer) {
                         spinner2leer = false;
                         System.out.println("Tore: " + output);
@@ -244,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Ergebnis der Abfrage an diese Klasse liefern
             conn3.delegate = new AsyncResponse() {
                 @Override
-                public void processFinish(String output) {
+                public void processFinish(String output, long durationMillis) {
                     TextView lauf = (TextView) findViewById(R.id.lauf);
                     try{
                     lauf.setText("Lauf: "+(Integer.parseInt(output)+1));}
@@ -481,7 +481,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //Ergebnis der Abfrage an diese Klasse liefern
                 conn.delegate = new AsyncResponse() {
                     @Override
-                    public void processFinish(String output) {
+                    public void processFinish(String output, long durationMillis) {
                         System.out.println("Gestartet: " + output);
                         //abfrage_Gestartet = false;
                         //Attribut "gestartet" erneuern
@@ -507,7 +507,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     HTTP_Connection conn = new HTTP_Connection("http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Abfrage_Startzeit.php", true, ConnectionActivity.IP_ADRESSE, getBaseContext());
                     conn.delegate = new AsyncResponse() {
                         @Override
-                        public void processFinish(String output) {
+                        public void processFinish(String output, long durationMillis) {
 
                         }
                     };
@@ -588,7 +588,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             //delegate darf nicht null sein, deshalb wird wieder die aktuelle Klasse aufgerufen, aber da initialisieren auf false steht, wird hier keine weitere Verarbeitung vorgenommen
                             conn.delegate = new AsyncResponse() {
                                 @Override
-                                public void processFinish(String output) {
+                                public void processFinish(String output, long durationMillis) {
                                     //Antwort vom Skript ist da
                                     System.out.println("Hallo");
                                     //angekommen...

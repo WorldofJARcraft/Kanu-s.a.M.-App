@@ -81,7 +81,7 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                         //nach Abschluss der Operationen von conn das Ergebnis der Abfrage durch das Script in die aktuelle Klasse importieren
                         conn.delegate = new AsyncResponse() {
                             @Override
-                            public void processFinish(String output) {
+                            public void processFinish(String output, long durationMillis) {
                                 //speichert, ob Fehler aufgetreten sind
                                 boolean verbunden = true;
                                 int stationen = 0;
@@ -153,12 +153,19 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                                     //Ergebnis der Abfrage an diese Klasse liefern
                                     conn.delegate = new AsyncResponse() {
                                         @Override
-                                        public void processFinish(String output) {
+                                        public void processFinish(String output, long durationMillis) {
                                             System.out.println("Anfrageergebnis: "+output);
                                             String[] teile = output.split("\\.");
                                             try {
-                                                long aktZeit = (Long.parseLong(teile[0])*1000+Long.parseLong(teile[1]));
-                                                zeitdiff = aktZeit - (syszeit+1200);
+
+                                                String wert = (teile[0]+teile[1]);
+                                                long aktZeit;
+                                                if(wert.length()==(""+syszeit).length()){
+                                                 aktZeit = (Long.parseLong(wert));}
+                                                else{
+                                                    aktZeit = Long.parseLong(wert.substring(0, wert.length()-1));}
+                                                zeitdiff = aktZeit - (syszeit+durationMillis);
+                                                System.out.println("Zeitdifferenz: "+zeitdiff);
                                             } catch (NumberFormatException e) {
                                                 //Startzeit kann nicht in Zahl umgewandelt werden --> nur bei Verbindungsfehler möglich, da diese Methode nur aufgerufen wird, falls eine Startzeit existiert
                                                 CONNECTION_ERROR = true;
@@ -211,7 +218,7 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                     //Ergebnis der Abfrage an diese Klasse liefern
                     conn.delegate = new AsyncResponse() {
                         @Override
-                        public void processFinish(String output) {
+                        public void processFinish(String output, long durationMillis) {
                             //Flagge zurücksetzen
                             abfrage_Gestartet = false;
                             //entsprechenden Wert speichern
@@ -233,7 +240,7 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                                 //Ergebnis der Abfrage an diese Klasse liefern
                                 conn.delegate = new AsyncResponse() {
                                     @Override
-                                    public void processFinish(String output) {
+                                    public void processFinish(String output, long durationMillis) {
                                         //initiales Attribut zurücksetzen
                                         abfrageStartzeit=false;
                                         //keine Fehler bei Umwandlung aufgetreten

@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Ergebnis der Abfrage an diese Klasse liefern
             conn.delegate = new AsyncResponse() {
                 @Override
-                public void processFinish(String output, long durationMillis) {
+                public void processFinish(String output, long durationMillis, String url) {
                     if (spinnerleer) {
                         spinnerleer = false;
                         System.out.println("Startnummern: " + output);
@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Ergebnis der Abfrage an diese Klasse liefern
             conn2.delegate = new AsyncResponse() {
                 @Override
-                public void processFinish(String output, long durationMillis) {
+                public void processFinish(String output, long durationMillis, String url) {
                     if (spinner2leer) {
                         spinner2leer = false;
                         System.out.println("Tore: " + output);
@@ -244,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Ergebnis der Abfrage an diese Klasse liefern
             conn3.delegate = new AsyncResponse() {
                 @Override
-                public void processFinish(String output, long durationMillis) {
+                public void processFinish(String output, long durationMillis, String url) {
                     TextView lauf = (TextView) findViewById(R.id.lauf);
                     try{
                     lauf.setText("Lauf: "+(Integer.parseInt(output)+1));}
@@ -266,8 +266,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         else {
             //Fehlermeldung ausgeben
             Toast.makeText(this, "Verbindung zum Server kann nicht hergestellt werden: Netzwerk nicht verfügbar!", Toast.LENGTH_LONG).show();
-
         }
+        syncDaemon.start();
         /**
          * Button, der die Anzeige aktualisiert.
          */
@@ -463,7 +463,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * speichert, ob gerade per PHP-Script die Startzeit abgefragt wurde
      */
     //private boolean abfrage_Startzeit = false;
-
+    private final List<String> anfragen = new ArrayList<>();
     /**
      * Wird aufgerufen, um die aktuelle Zeit für die gewählte Startnummer einzutragen; ist den "Zeit nehmen"-Button zugeordnet.
      *
@@ -472,64 +472,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         //wenn Wettkampf nicht gestartet...
-        if (!gestartet) {
-            //... prüfen, ob dies mittlerweile getan wurde
-            if (isNetworkAvailable()) {
-                //abfrage_Gestartet = true;
-                initialisieren = false;
-                HTTP_Connection conn = new HTTP_Connection("http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Abfrage_gestartet.php", true, ConnectionActivity.IP_ADRESSE, getBaseContext());
-                //Ergebnis der Abfrage an diese Klasse liefern
-                conn.delegate = new AsyncResponse() {
-                    @Override
-                    public void processFinish(String output, long durationMillis) {
-                        System.out.println("Gestartet: " + output);
-                        //abfrage_Gestartet = false;
-                        //Attribut "gestartet" erneuern
-                        if (output.equals("true")) {
-                            gestartet = true;
-                        }
-
-                        if (output.equals("false")) {
-                            gestartet = false;
-                        }
-                    }
-                };
-                //Abfrage ausführen
-                conn.execute("params");
-            }
-        }
-        //Zeiten nur eintragen, wenn der Wettkampf gestartet wurde
-        if (gestartet) {
-            //falls keine Fehler aufgetreten sind und es noch Elemente im Spinner gibt...
-            //if (s != null && s.getSelectedItem() != null && !(SQL_ERROR || CONNECTION_ERROR)) {
-                //Startzeit ermitteln, Stoppuhr starten
-                if (isNetworkAvailable()) {
-                    HTTP_Connection conn = new HTTP_Connection("http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Abfrage_Startzeit.php", true, ConnectionActivity.IP_ADRESSE, getBaseContext());
-                    conn.delegate = new AsyncResponse() {
-                        @Override
-                        public void processFinish(String output, long durationMillis) {
-
-                        }
-                    };
-                    //abfrage_Startzeit = true;
-                    System.out.println("Frage nach Startzeit!");
-                    conn.execute("params");
-                }
-                //... prüfen, ob das Netzwerk verfügbar ist...
-                if (isNetworkAvailable()) {
-                    //Position des ausgewählten Items im Spinner = seine Position in ArraySpinner
-                    //--> ausgewählte Startnummer ist der Wert an dieser Position
-                    final String gewählte_Nummer = arraySpinner[s.getSelectedItemPosition()];
-                    //ermitteln, für welche Station der Wert eingetragen werden soll
-                    int Station = ConnectionActivity.gewählteStation;
-                    /**
-                     * Speichert, ob die Anfrage angekommen ist
-                     */
-                    final boolean[] erfolg = {false};
-                    /**
-                     * Speichert alle HTTP-Requests
-                     */
-                    final List<String> anfragen = new ArrayList<>();
+        //falls keine Fehler aufgetreten sind und es noch Elemente im Spinner gibt...
+        //if (s != null && s.getSelectedItem() != null && !(SQL_ERROR || CONNECTION_ERROR)) {
+        //Startzeit ermitteln, Stoppuhr starten
+        //Position des ausgewählten Items im Spinner = seine Position in ArraySpinner
+        //--> ausgewählte Startnummer ist der Wert an dieser Position
+        final String gewählte_Nummer = arraySpinner[s.getSelectedItemPosition()];
+        //ermitteln, für welche Station der Wert eingetragen werden soll
+        int Station = ConnectionActivity.gewählteStation;
+        /**
+         * Speichert, ob die Anfrage angekommen ist
+         */
+        final boolean[] erfolg = {false};
+        /**
+         * Speichert alle HTTP-Requests
+         */
                     /*
                     //ArraySpinner in Linked´List konvertieren...
                     List<String> liste = new LinkedList<String>(Arrays.asList(arraySpinner));
@@ -543,85 +500,60 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     s.setAdapter(adapter);
                     //erste übrige Startnummer auswählen
                     s.setSelection(0);*/
-                    //Initialisierung definitiv abgeschlossen
-                    initialisieren = false;
-                    //Tabelle adressieren...
-                    TableLayout layout = (TableLayout) findViewById(R.id.strafenTabelle);
-                    System.out.println("Tore: " + layout.getChildCount());
-                    //... und jede zeile einzeln durchgehen; Kopfzeile ignorieren
-                    for (int i = 0; i < strafen.length; i++) {
-                        //Tor und Strafe initialisieren...
-                        String strafe = "-1";
-                        String tor = "0";
-                        //... und aktuelle Zeile auslesen
-                        if(tore[i]!=null)
-                            tor = tore[i].getText().toString();
-                        if(strafen[i]!=null)
-                        strafe = strafen[i].getSelectedItem().toString();
-                                //}
+        //Initialisierung definitiv abgeschlossen
+        initialisieren = false;
+        //Tabelle adressieren...
+        TableLayout layout = (TableLayout) findViewById(R.id.strafenTabelle);
+        System.out.println("Tore: " + layout.getChildCount());
+        //... und jede zeile einzeln durchgehen; Kopfzeile ignorieren
+        for (int i = 0; i < strafen.length; i++) {
+            //Tor und Strafe initialisieren...
+            String strafe = "-1";
+            String tor = "0";
+            //... und aktuelle Zeile auslesen
+            if (tore[i] != null)
+                tor = tore[i].getText().toString();
+            if (strafen[i] != null)
+                strafe = strafen[i].getSelectedItem().toString();
+            //}
 
 
-                        //Kontrollausgabe
-                        System.out.println("Eintragen von Zeit für Startnummer: " + gewählte_Nummer + " bei Station: " + Station + " in Tor: " + tor);
-                        //Prüfen, dass auch ja eine korrekte Zuordnung existiert
-                        if (Integer.parseInt(strafe) != -1) {
-                            //Anfrage zusammensetzen
-                            final String request = "http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/zeit_eintragen.php?station=" + (Integer.parseInt(tor)-1)
-                                    + "&startnummer=" + (Integer.parseInt(gewählte_Nummer)) + "&strafe=" + strafe;
-                            //Zugriff auf Speicherdaten der App
-                            SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-                            //Liste der abzusendenden Anfragen ermitteln...
-                            String zuErledigen = settings.getString("Strafen", "");
-                            //... und die aktuelle Anfrage hinzufügen
-                            zuErledigen+="|"+request;
-                            //Anfragen werden gespeichert, um später löschen zu können
-                            anfragen.add(request);
-                            //Speichern des geänderten Werts
-                            SharedPreferences.Editor editor = settings.edit();
-                            editor.putString("Strafen", zuErledigen);
-
-                            // Commit the edits!
-                            editor.commit();
-                            //"zeit_eintragen.php" aufrufen, um die aktuelle Zeit für die gewählte Startnummer zu nehmen
-                            final HTTP_Connection conn = new HTTP_Connection(request, true, ConnectionActivity.IP_ADRESSE, getBaseContext());
-                            System.out.println("Versuche, Zeit einzutragen mit " + request);
-                            //delegate darf nicht null sein, deshalb wird wieder die aktuelle Klasse aufgerufen, aber da initialisieren auf false steht, wird hier keine weitere Verarbeitung vorgenommen
-                            conn.delegate = new AsyncResponse() {
-                                @Override
-                                public void processFinish(String output, long durationMillis) {
-                                    //Antwort vom Skript ist da
-                                    System.out.println("Hallo");
-                                    //angekommen...
-                                    if(output.equals("Erfolg")){
-                                        erfolg[0] = true;
-                                        //... --> Anfrage von Liste streichen
-                                        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-                                        String zuErledigen = settings.getString("Strafen", "");
-                                        zuErledigen= zuErledigen.substring(0,zuErledigen.indexOf(anfragen.get(0))-1)+zuErledigen.substring(zuErledigen.indexOf(anfragen.get(0))+anfragen.get(0).length());
-                                        anfragen.remove(0);
-                                        SharedPreferences.Editor editor = settings.edit();
-                                        editor.putString("Strafen", zuErledigen);
-                                        // Commit the edits!
-                                        editor.commit();
-                                    }
-                                    //Erfolgs- oder Fehlermeldung
-                                    if(erfolg[0]){
-                                        Toast.makeText(MainActivity.this,"Starfzeiten für Startnummer "+gewählte_Nummer+" erfolgreich eingetragen!",Toast.LENGTH_SHORT).show();
-                                    }
-                                    else{
-                                        Toast.makeText(MainActivity.this,"Beim Eintragen von Strafzeiten für Startnummer "+gewählte_Nummer+" ist ein Fehler aufgetreten!",Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            };
-                            //Abfrage starten
-                            conn.execute("params");
+            //Kontrollausgabe
+            System.out.println("Eintragen von Zeit für Startnummer: " + gewählte_Nummer + " bei Station: " + Station + " in Tor: " + tor);
+            //Prüfen, dass auch ja eine korrekte Zuordnung existiert
+            if (Integer.parseInt(strafe) != -1) {
+                //Anfrage zusammensetzen
+                final String request = "http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/zeit_eintragen.php?station=" + (Integer.parseInt(tor) - 1)
+                        + "&startnummer=" + (Integer.parseInt(gewählte_Nummer)) + "&strafe=" + strafe;
+                //Anfragen werden gespeichert, um später löschen zu können
+                anfragen.add(request);
+                //"zeit_eintragen.php" aufrufen, um die aktuelle Zeit für die gewählte Startnummer zu nehmen
+                if (isNetworkAvailable()) {
+                    //wenn ja: neue Instanz von HTTP_Connection erstellen, die das Script "Abfrage_Startnummern" ausführt und so alle Startnummern aus der Datenbank ausliest
+                    HTTP_Connection conn = new HTTP_Connection(request, true, ConnectionActivity.IP_ADRESSE, getBaseContext());
+                    //Ergebnis der Abfrage an diese Klasse liefern
+                    System.out.println("Versuche, zu starten mit: " + request);
+                    conn.delegate = new AsyncResponse() {
+                        @Override
+                        public void processFinish(String output, long durationMillis, String url) {
+                            //Skript gibt "Erfolg!" aus, wenn korrekt eingetragen --> dann Erfolgsmeldung ausgeben, sonst nicht
+                            System.out.println("Antwort auf Strafzeitenanfrage: " + output);
+                            if (output.equals("Erfolg")) {
+                                Toast.makeText(MainActivity.this, "Strafzeiten für Startnummer " + s.getSelectedItem().toString() + " erfolgreich eingetragen!", Toast.LENGTH_SHORT).show();
+                                //... --> Anfrage von Liste streichen
+                                anfragen.remove(request);
+                            } else {
+                                Toast.makeText(MainActivity.this, "Beim Eintragen von Strafzeiten für Startnummer " + s.getSelectedItem().toString() + " ist ein Fehler aufgetreten!" +
+                                        " Die Strafzeiten wurden gespeichert und werden bei einer Wiederherstellung der Verbindung automatisch übermittelt!", Toast.LENGTH_LONG).show();
+                            }
                         }
-                    }
-
+                    };
+                    conn.execute("params");
                 } else {
-                    //Fehlermeldung, da keine Verbindung möglich
-                    Toast.makeText(this, "Verbindung zum Server kann nicht hergestellt werden: Netzwerk nicht verfügbar!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Beim Eintragen von Strafzeiten für Startnummer " + s.getSelectedItem().toString() + " ist ein Fehler aufgetreten!" +
+                            " Die Strafzeiten wurden gespeichert und werden bei einer Wiederherstellung der Verbindung automatisch übermittelt!", Toast.LENGTH_LONG).show();
                 }
+            }
             //}
             //wenn Bedingung eintritt, git es keine auswählbaren Elemente mehr
             /*if (s == null || s.getSelectedItem() == null) {
@@ -643,12 +575,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 zeit.setVisibility(View.GONE);
             }*/
             //wurde der Wettkampf noch nicht gestartet, wird eine Warnung ausgegeben
-        } else {
-            Toast.makeText(this, "Der Wettkampf ist noch nicht gestartet und Sie können noch keine Zeiten eintragen oder ein Netzwerkfehler ist aufgetreten. Bitte überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es später erneut!", Toast.LENGTH_LONG).show();
-            //zuerst prüfen, ob schon Werte eingetragen werden können
+
         }
     }
-
+    private Thread syncDaemon = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            while (!Thread.currentThread().isInterrupted()){
+                for(final String request : anfragen){
+                    //Versuchen, die Anfrage zu versenden
+                    if (isNetworkAvailable()) {
+                        //wenn ja: neue Instanz von HTTP_Connection erstellen, die das Script "Abfrage_Startnummern" ausführt und so alle Startnummern aus der Datenbank ausliest
+                        HTTP_Connection conn = new HTTP_Connection(request, true, ConnectionActivity.IP_ADRESSE,1);
+                        //Ergebnis der Abfrage an diese Klasse liefern
+                        System.out.println("Versuche, zu starten mit: "+request);
+                        conn.delegate = new AsyncResponse() {
+                            @Override
+                            public void processFinish(String output, long durationMillis, String url) {
+                                //Skript gibt "Erfolg!" aus, wenn korrekt eingetragen --> dann Erfolgsmeldung ausgeben, sonst nicht
+                                System.out.println("Anfrage:"+url);
+                                if(output.equals("Erfolg")){
+                                    Toast.makeText(MainActivity.this,"Strafzeiten für Startnummer "+request.substring(request.indexOf("&startnummer=")+13,request.indexOf("&strafe="))+" wurden erfolgreich gespeichert!",Toast.LENGTH_SHORT).show();
+                                    //... --> Anfrage von Liste streichen
+                                    if(anfragen.contains(url))
+                                        anfragen.remove(url);
+                                }
+                            }
+                        };
+                        conn.execute("params");
+                    }
+                }
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    });
     /**
      * Wird beim Beenden des Activitys aufgerufen
      */
@@ -657,10 +621,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     {
         //Vernichtung
         super.onDestroy();
-        //alle gespeicherten Anfragen löschen, damit nicht mit erneutem Start interferieren
-        SharedPreferences myPrefs = this.getSharedPreferences(PREFS_NAME,0);
-        myPrefs.edit().remove("Strafen");
-        myPrefs.edit().clear();
-        myPrefs.edit().commit();
+        //Abbruch des Hintergrundthreads
+        syncDaemon.interrupt();
     }
+
 }

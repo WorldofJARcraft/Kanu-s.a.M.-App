@@ -49,7 +49,7 @@ public class StoppActivity extends AppCompatActivity {
             //Ergebnis der Abfrage an diese Klasse liefern
             conn.delegate = new AsyncResponse() {
                 @Override
-                public void processFinish(String output, long durationMillis) {
+                public void processFinish(String output, long durationMillis, String url) {
                     if (spinnerleer) {
                         spinnerleer = false;
                         System.out.println("Startnummern: " + output);
@@ -84,7 +84,7 @@ public class StoppActivity extends AppCompatActivity {
             //Ergebnis der Abfrage an diese Klasse liefern
             conn3.delegate = new AsyncResponse() {
                 @Override
-                public void processFinish(String output, long durationMillis) {
+                public void processFinish(String output, long durationMillis, String url) {
                     TextView lauf = (TextView) findViewById(R.id.lauf_stopp);
                     try{
                         lauf.setText("Lauf: "+(Integer.parseInt(output)+1));}
@@ -93,60 +93,41 @@ public class StoppActivity extends AppCompatActivity {
                     }
                 }};
             conn3.execute("params");
+            syncDaemon.start();
         }
         findViewById(R.id.stoppButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final String request = "http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Zielzeit_eintragen.php?startnummer="+s.getSelectedItem().toString()+"&timestamp="+(System.currentTimeMillis()+ConnectionActivity.zeitdiff);
-                final List<String> anfragen = new ArrayList<>();
+                anfragen.add(request);
                 if (isNetworkAvailable()) {
-                    //Zugriff auf Speicherdaten der App
-                    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-                    //Liste der abzusendenden Anfragen ermitteln...
-                    String zuErledigen = settings.getString("Zielzeiten", "");
-                    //... und die aktuelle Anfrage hinzufügen
-                    zuErledigen+="|"+request;
-                    //Anfragen werden gespeichert, um später löschen zu können
-                    anfragen.add(request);
-                    //Speichern des geänderten Werts
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString("Zielzeiten", zuErledigen);
-
-                    // Commit the edits!
-                    editor.commit();
                     //wenn ja: neue Instanz von HTTP_Connection erstellen, die das Script "Abfrage_Startnummern" ausführt und so alle Startnummern aus der Datenbank ausliest
                     HTTP_Connection conn = new HTTP_Connection(request, true, ConnectionActivity.IP_ADRESSE, getBaseContext());
                     //Ergebnis der Abfrage an diese Klasse liefern
-                    System.out.println("Versuche, zu starten mit: "+request);
+                    System.out.println("Versuche, zu stoppen mit: "+request);
                     conn.delegate = new AsyncResponse() {
                         @Override
-                        public void processFinish(String output, long durationMillis) {
-                            //Skript gibt "Erfolg" zurück, wenn Daten eingetragen --> prüfen, ob vorliegt
+                        public void processFinish(String output, long durationMillis, String url) {
+                            //Skript gibt "Erfolg!" aus, wenn korrekt eingetragen --> dann Erfolgsmeldung ausgeben, sonst nicht
+                            System.out.println("Antwort auf Startanfrage: "+output);
                             if(output.equals("Erfolg!")){
-                                //wenn ja: Erfolgsmeldung
                                 Toast.makeText(StoppActivity.this,"Startnummer "+s.getSelectedItem().toString()+" erfolgreich gestoppt!",Toast.LENGTH_SHORT).show();
                                 //... --> Anfrage von Liste streichen
-                                SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-                                String zuErledigen = settings.getString("Zielzeiten", "");
-                                zuErledigen= zuErledigen.substring(0,zuErledigen.indexOf(anfragen.get(0))-1)+zuErledigen.substring(zuErledigen.indexOf(anfragen.get(0))+anfragen.get(0).length());
-                                anfragen.remove(0);
-                                SharedPreferences.Editor editor = settings.edit();
-                                editor.putString("Zielzeiten", zuErledigen);
-                                // Commit the edits!
-                                editor.commit();
-
+                                anfragen.remove(request);
                             }
                             else{
-                                //sonst: Fehlermeldung
-                                Toast.makeText(StoppActivity.this,"Beim Stoppen von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!",Toast.LENGTH_SHORT).show();
+                                Toast.makeText(StoppActivity.this,"Beim Stoppen von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!" +
+                                        " Die Zielzeit wurde gespeichert und wird bei einer Wiederherstellung der Verbindung automatisch übermittelt!",Toast.LENGTH_LONG).show();
                             }
                         }
                     };
                     conn.execute("params");
                 }
                 else{
-                    Toast.makeText(StoppActivity.this,"Beim Stoppen von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(StoppActivity.this,"Beim Stoppen von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!" +
+                            "Die Zielzeit wurde gespeichert und wird bei einer Wiederherstellung der Verbindung automatisch übermittelt!",Toast.LENGTH_SHORT).show();
                 }
+
             }
         });
         /**
@@ -163,6 +144,45 @@ public class StoppActivity extends AppCompatActivity {
         });
     }
     /**
+     * Speichert alle Anfragen, welche noch zu senden sind.
+     */
+    private final ArrayList<String> anfragen = new ArrayList<>();
+    private Thread syncDaemon = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            while (!Thread.currentThread().isInterrupted()){
+                for(final String request : anfragen){
+                    //Versuchen, die Anfrage zu versenden
+                    if (isNetworkAvailable()) {
+                            //wenn ja: neue Instanz von HTTP_Connection erstellen, die das Script "Abfrage_Startnummern" ausführt und so alle Startnummern aus der Datenbank ausliest
+                            HTTP_Connection conn = new HTTP_Connection(request, true, ConnectionActivity.IP_ADRESSE,1);
+                            //Ergebnis der Abfrage an diese Klasse liefern
+                            System.out.println("Versuche, zu starten mit: "+request);
+                            conn.delegate = new AsyncResponse() {
+                                @Override
+                                public void processFinish(String output, long durationMillis, String url) {
+                                    //Skript gibt "Erfolg!" aus, wenn korrekt eingetragen --> dann Erfolgsmeldung ausgeben, sonst nicht
+                                    System.out.println("Antwort auf Startanfrageim Daemon: "+output);
+                                    if(output.equals("Erfolg!")){
+                                        Toast.makeText(StoppActivity.this,"Startnummer "+url.substring(url.indexOf("startnummer=")+12, url.indexOf("&timestamp"))+" wurde mit gespeicherter Zeit erfolgreich gestoppt!",Toast.LENGTH_SHORT).show();
+                                        //... --> Anfrage von Liste streichen
+                                        if(anfragen.contains(url))
+                                            anfragen.remove(url);
+                                    }
+                                }
+                            };
+                        conn.execute("params");
+                    }
+                }
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    });
+    /**
      * Wird beim Beenden des Activitys aufgerufen
      */
     @Override
@@ -170,10 +190,7 @@ public class StoppActivity extends AppCompatActivity {
     {
         //Vernichtung
         super.onDestroy();
-        //alle gespeicherten Anfragen löschen, damit nicht mit erneutem Start interferieren
-        SharedPreferences myPrefs = this.getSharedPreferences(PREFS_NAME,0);
-        myPrefs.edit().remove("Zielzeiten");
-        myPrefs.edit().clear();
-        myPrefs.edit().commit();
+        //Abbruch des Hintergrundthreads
+        syncDaemon.interrupt();
     }
 }

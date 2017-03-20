@@ -58,9 +58,8 @@ public class HTTP_Connection extends AsyncTask<String, Void, String> {
      * @param nachricht die komplette aufzurufende Web-Adresse
      * @param delegate  true für Resultat weitergeben, false für Resultat nicht weitergeben
      * @param url       die eigentliche IP-Adresse des Zielservers
-     * @param mContext  ein Kontext für die Ausgabe von Toasts
      */
-    public HTTP_Connection(String nachricht, boolean delegate, String url, Context mContext, int mMaxRetries) {
+    public HTTP_Connection(String nachricht, boolean delegate, String url, int mMaxRetries) {
         //übergebene Werte in globalen Variablen speichern
         this.url = nachricht;
         resultatweitergeben = delegate;
@@ -179,7 +178,7 @@ public class HTTP_Connection extends AsyncTask<String, Void, String> {
             //Prozedur processFinish des Interface "AsyncResponse" aufrufen --> dieses ist abstrakt und muss von einer Klasse implementiert werden;
             //delegate muss zudem jene Klasse zugewiesen sein --> dann wird void in dieser Klasse ausgeführt, dem der Inhalt der Website übergeben wird,
             //und so ist der Inhalt der Website in dieser Klasse verfügbar
-            delegate.processFinish(result,duration);
+            delegate.processFinish(result,duration,url);
             System.out.println("Ergebnis:" + result);
         }
         System.out.println("Ergebnis: "+result);

@@ -81,7 +81,7 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                         //nach Abschluss der Operationen von conn das Ergebnis der Abfrage durch das Script in die aktuelle Klasse importieren
                         conn.delegate = new AsyncResponse() {
                             @Override
-                            public void processFinish(String output, long durationMillis) {
+                            public void processFinish(String output, long durationMillis, String url) {
                                 //speichert, ob Fehler aufgetreten sind
                                 boolean verbunden = true;
                                 int stationen = 0;
@@ -153,17 +153,27 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                                     //Ergebnis der Abfrage an diese Klasse liefern
                                     conn.delegate = new AsyncResponse() {
                                         @Override
-                                        public void processFinish(String output, long durationMillis) {
+                                        public void processFinish(String output, long durationMillis, String url) {
                                             System.out.println("Anfrageergebnis: "+output);
                                             String[] teile = output.split("\\.");
                                             try {
 
                                                 String wert = (teile[0]+teile[1]);
                                                 long aktZeit;
-                                                if(wert.length()==(""+syszeit).length()){
+                                                String vergleich = ""+syszeit;
+                                                if(wert.length()==(vergleich).length()){
                                                  aktZeit = (Long.parseLong(wert));}
-                                                else{
-                                                    aktZeit = Long.parseLong(wert.substring(0, wert.length()-1));}
+                                                else {
+                                                    if (wert.length() > (vergleich.length())) {
+                                                        aktZeit = Long.parseLong(wert.substring(0, vergleich.length()));
+                                                    }
+                                                    else{
+                                                        while (wert.length()<vergleich.length()){
+                                                            wert += "0";
+                                                        }
+                                                        aktZeit = Long.parseLong(wert);
+                                                    }
+                                                }
                                                 zeitdiff = aktZeit - (syszeit+durationMillis);
                                                 System.out.println("Zeitdifferenz: "+zeitdiff);
                                             } catch (NumberFormatException e) {
@@ -218,7 +228,7 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                     //Ergebnis der Abfrage an diese Klasse liefern
                     conn.delegate = new AsyncResponse() {
                         @Override
-                        public void processFinish(String output, long durationMillis) {
+                        public void processFinish(String output, long durationMillis, String url) {
                             //Flagge zurücksetzen
                             abfrage_Gestartet = false;
                             //entsprechenden Wert speichern
@@ -240,7 +250,7 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                                 //Ergebnis der Abfrage an diese Klasse liefern
                                 conn.delegate = new AsyncResponse() {
                                     @Override
-                                    public void processFinish(String output, long durationMillis) {
+                                    public void processFinish(String output, long durationMillis, String url) {
                                         //initiales Attribut zurücksetzen
                                         abfrageStartzeit=false;
                                         //keine Fehler bei Umwandlung aufgetreten

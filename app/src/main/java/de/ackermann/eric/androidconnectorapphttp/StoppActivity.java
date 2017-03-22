@@ -111,12 +111,12 @@ public class StoppActivity extends AppCompatActivity {
                             //Skript gibt "Erfolg!" aus, wenn korrekt eingetragen --> dann Erfolgsmeldung ausgeben, sonst nicht
                             System.out.println("Antwort auf Startanfrage: "+output);
                             if(output.equals("Erfolg!")){
-                                Toast.makeText(StoppActivity.this,"Startnummer "+s.getSelectedItem().toString()+" erfolgreich gestoppt!",Toast.LENGTH_SHORT).show();
+                                Toast.makeText(StoppActivity.this,"Startnummer "+url.substring(url.indexOf("startnummer=")+12, url.indexOf("&time"))+" erfolgreich gestoppt!",Toast.LENGTH_SHORT).show();
                                 //... --> Anfrage von Liste streichen
                                 anfragen.remove(request);
                             }
                             else{
-                                Toast.makeText(StoppActivity.this,"Beim Stoppen von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!" +
+                                Toast.makeText(StoppActivity.this,"Beim Stoppen von Startnummer "+url.substring(url.indexOf("startnummer=")+12, url.indexOf("&time"))+" ist ein Fehler aufgetreten!" +
                                         " Die Zielzeit wurde gespeichert und wird bei einer Wiederherstellung der Verbindung automatisch übermittelt!",Toast.LENGTH_LONG).show();
                             }
                         }
@@ -127,7 +127,8 @@ public class StoppActivity extends AppCompatActivity {
                     Toast.makeText(StoppActivity.this,"Beim Stoppen von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!" +
                             "Die Zielzeit wurde gespeichert und wird bei einer Wiederherstellung der Verbindung automatisch übermittelt!",Toast.LENGTH_SHORT).show();
                 }
-
+                if(s.getSelectedItemPosition()<s.getCount()-1)
+                    s.setSelection(s.getSelectedItemPosition()+1);
             }
         });
         /**

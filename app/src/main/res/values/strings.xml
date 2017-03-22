@@ -18,6 +18,7 @@
     <string name="aktualisieren">Aktualisieren!</string>
     <string name="dummy">Aufgrund einer Netzwerkverzögerung können keine Informationen angezeigt werden.</string>
     <string name="nicht_verbunden">Nicht verbunden.</string>
+    <string name="gek">Gekentert!</string>
     <string-array name="spinner_standard">
         <item>1</item>
         <item>2</item>

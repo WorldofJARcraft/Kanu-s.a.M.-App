@@ -157,8 +157,11 @@ public class ConnectionActivity extends AppCompatActivity implements AdapterView
                                             System.out.println("Anfrageergebnis: "+output);
                                             String[] teile = output.split("\\.");
                                             try {
-
-                                                String wert = (teile[0]+teile[1]);
+                                                String wert;
+                                                if(teile.length>1)
+                                                wert = (teile[0]+teile[1]);
+                                                else
+                                                    wert = teile[0];
                                                 long aktZeit;
                                                 String vergleich = ""+syszeit;
                                                 if(wert.length()==(vergleich).length()){

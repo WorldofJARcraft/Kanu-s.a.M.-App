@@ -36,6 +36,21 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="57dp"
         android:id="@+id/startnummer_start" />
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
+    <Button
+        android:id="@+id/vor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:drawableLeft="@drawable/start"
+        android:text="@string/start" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
 
     <Button
         android:id="@+id/starter"
@@ -44,6 +59,22 @@
         android:background="@android:color/transparent"
         android:drawableLeft="@drawable/start"
         android:text="@string/start" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
+    <Button
+        android:id="@+id/nach"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:drawableLeft="@drawable/start"
+        android:text="@string/start" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
 
     <Button
         android:id="@+id/aktualisierenStart"

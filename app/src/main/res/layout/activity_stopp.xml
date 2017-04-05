@@ -36,7 +36,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="75dp" />
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
 
+    <Button
+        android:id="@+id/vorStopp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:drawableLeft="@drawable/stopp"
+        android:text="@string/start" />
+
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
     <Button
         android:text="@string/stopp"
         android:layout_width="match_parent"
@@ -44,6 +59,22 @@
         android:background="@android:color/transparent"
         android:drawableLeft="@drawable/stopp"
         android:id="@+id/stoppButton" />
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
+    <Button
+        android:id="@+id/nachStopp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:drawableLeft="@drawable/stopp"
+        android:text="@string/start" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
     <Button
         android:text="@string/aktualisieren"
         android:layout_width="match_parent"

@@ -24,4 +24,6 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+    <string name="keine_vorige">Keine vorige Startnummer!</string>
+    <string name="keine_folgende">Keine folgende Startnummer!</string>
 </resources>

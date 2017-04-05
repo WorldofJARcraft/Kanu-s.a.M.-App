@@ -62,7 +62,9 @@
         android:id="@+id/strafenTabelle"
         android:layout_marginTop="38dp">
     </TableLayout>
-
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
     <Button
         android:id="@+id/zeitnahme"
         android:layout_width="match_parent"
@@ -71,6 +73,10 @@
         android:drawableLeft="@drawable/tabelle"
         android:text="@string/zeit_nehmen" />
 
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
     <Button
         android:id="@+id/aktualisierenButton"
         android:layout_width="match_parent"
@@ -78,7 +84,9 @@
         android:background="@android:color/transparent"
         android:drawableLeft="@drawable/reload"
         android:text="@string/aktualisieren" />
-
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
     <Button
         android:id="@+id/gekentert"
         style="@style/Widget.AppCompat.Button.Borderless"
@@ -87,5 +95,8 @@
         android:drawableLeft="@drawable/gekentert"
         android:text="@string/gek" />
 
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
 </LinearLayout>
 </ScrollView>

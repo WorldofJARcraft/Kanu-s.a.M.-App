@@ -3,11 +3,16 @@ package de.ackermann.eric.androidconnectorapphttp;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -38,11 +43,38 @@ public class StartActivity extends AppCompatActivity {
     String[] arraySpinner;
     ArrayAdapter<String> adapter;
     Context context = this;
+    /**
+     * Spielt ein kurzes Signal ab, wenn der Startbefehl eingegeben wurde.
+     */
+    private MediaPlayer player;
 
+    /**
+     * Aktion beim Klick auf den zurück-Button
+     * @param item der Button
+     * @return true oder false
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
+            //anzeigen eines Buttons "Zurück"
+            ActionBar actionBar = getSupportActionBar();
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            //actionBar.setHomeAsUpIndicator(R.mipmap.ic_arrow_back_white_24dp);
+            actionBar.setDisplayShowHomeEnabled(true);
+        player = MediaPlayer.create(this, R.raw.okay);
+        player.setVolume(1f,1f);
         if (isNetworkAvailable()) {
             //wenn ja: neue Instanz von HTTP_Connection erstellen, die das Script "Abfrage_Startnummern" ausführt und so alle Startnummern aus der Datenbank ausliest
             HTTP_Connection conn = new HTTP_Connection("http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Abfrage_Startnummern.php", true, ConnectionActivity.IP_ADRESSE, getBaseContext());
@@ -69,9 +101,39 @@ public class StartActivity extends AppCompatActivity {
                         //Spinner die Werte zuordnen
                         s.setAdapter(adapter);
                         //niedrigste Startnummer auswählen
-                        s.setSelection(0);
                         //schwarze Items
-                        s.setSelection(0, true);
+                        s.setSelection(0, false);
+                        s.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                                if (adapterView != null && view != null && arraySpinner != null) {
+                                    if (i == 0) {
+                                        Button vor = (Button) findViewById(R.id.vor);
+                                        vor.setText(R.string.keine_vorige);
+                                        vor.setEnabled(false);
+                                    } else {
+                                        Button vor = (Button) findViewById(R.id.vor);
+                                        vor.setText("Startnummer " + arraySpinner[i-1] + " starten!");
+                                        vor.setEnabled(true);
+                                    }
+                                    if (i == adapterView.getCount() - 1) {
+                                        Button nach = (Button) findViewById(R.id.nach);
+                                        nach.setText(R.string.keine_folgende);
+                                        nach.setEnabled(false);
+                                    } else {
+                                        Button nach = (Button) findViewById(R.id.nach);
+                                        nach.setText("Startnummer "  + arraySpinner[i+1]+ " starten!");
+                                        nach.setEnabled(true);
+                                    }
+                                    Button starter = (Button) findViewById(R.id.starter);
+                                    starter.setText("Startnummer " + arraySpinner[i] + " starten!");
+                                }
+                            }
+                            @Override
+                            public void onNothingSelected(AdapterView<?> adapterView) {
+
+                            }
+                        });
                         View v = s.getSelectedView();
                         ((TextView) v).setTextColor(Color.BLACK);
                         //Startnummern ermittelt --> von nun an keine PHP-Ausgaben mehr zu verarbeiten, da von hier an nur noch Eintragungen in die Datenbank
@@ -97,38 +159,21 @@ public class StartActivity extends AppCompatActivity {
         findViewById(R.id.starter).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final String request = "http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Startzeit_eintragen.php?startnummer="+s.getSelectedItem().toString()+"&timestamp="+(System.currentTimeMillis()+ConnectionActivity.zeitdiff);
-                boolean[] erfolg = {false};
-                anfragen.add(request);
-                if (isNetworkAvailable()) {
-                    //wenn ja: neue Instanz von HTTP_Connection erstellen, die das Script "Abfrage_Startnummern" ausführt und so alle Startnummern aus der Datenbank ausliest
-                    HTTP_Connection conn = new HTTP_Connection(request, true, ConnectionActivity.IP_ADRESSE, getBaseContext());
-                    //Ergebnis der Abfrage an diese Klasse liefern
-                    System.out.println("Versuche, zu starten mit: "+request);
-                    conn.delegate = new AsyncResponse() {
-                        @Override
-                        public void processFinish(String output, long durationMillis, String url) {
-                            //Skript gibt "Erfolg!" aus, wenn korrekt eingetragen --> dann Erfolgsmeldung ausgeben, sonst nicht
-                            System.out.println("Antwort auf Startanfrage: "+output);
-                            if(output.equals("Erfolg!")){
-                                Toast.makeText(StartActivity.this,"Startnummer "+url.substring(url.indexOf("startnummer=")+12, url.indexOf("&time"))+" erfolgreich gestartet!",Toast.LENGTH_SHORT).show();
-                                //... --> Anfrage von Liste streichen
-                                anfragen.remove(request);
-                            }
-                            else{
-                                Toast.makeText(StartActivity.this,"Beim Start von Startnummer "+url.substring(url.indexOf("startnummer=")+12, url.indexOf("&time"))+" ist ein Fehler aufgetreten!" +
-                                        " Die Startzeit wurde gespeichert und wird bei einer Wiederherstellung der Verbindung automatisch übermittelt!",Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    };
-                    conn.execute("params");
-                }
-                else{
-                    Toast.makeText(StartActivity.this,"Beim Start von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!" +
-                            "Die Startzeit wurde gespeichert und wird bei einer Wiederherstellung der Verbindung automatisch übermittelt!",Toast.LENGTH_SHORT).show();
-                }
+            start(Integer.parseInt(s.getSelectedItem().toString()));
                 if(s.getSelectedItemPosition()<s.getCount()-1)
                     s.setSelection(s.getSelectedItemPosition()+1);
+            }
+        });
+        findViewById(R.id.vor).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                start(Integer.parseInt(arraySpinner[s.getSelectedItemPosition()-1]));
+            }
+        });
+        findViewById(R.id.nach).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                start(Integer.parseInt(arraySpinner[s.getSelectedItemPosition()+1]));
             }
         });
         /**
@@ -145,14 +190,45 @@ public class StartActivity extends AppCompatActivity {
         });
         syncDaemon.start();
     }
-
+    private void start(int startnummer){
+        final String request = "http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/Startzeit_eintragen.php?startnummer="+startnummer+"&timestamp="+(System.currentTimeMillis()+ConnectionActivity.zeitdiff);
+        //Signalausgabe
+        player.start();
+        if (isNetworkAvailable()) {
+            //wenn ja: neue Instanz von HTTP_Connection erstellen, die das Script "Abfrage_Startnummern" ausführt und so alle Startnummern aus der Datenbank ausliest
+            HTTP_Connection conn = new HTTP_Connection(request, true, ConnectionActivity.IP_ADRESSE, getBaseContext());
+            //Ergebnis der Abfrage an diese Klasse liefern
+            System.out.println("Versuche, zu starten mit: "+request);
+            conn.delegate = new AsyncResponse() {
+                @Override
+                public void processFinish(String output, long durationMillis, String url) {
+                    //Skript gibt "Erfolg!" aus, wenn korrekt eingetragen --> dann Erfolgsmeldung ausgeben, sonst nicht
+                    System.out.println("Antwort auf Startanfrage: "+output);
+                    if(output.equals("Erfolg!")){
+                        Toast.makeText(StartActivity.this,"Startnummer "+url.substring(url.indexOf("startnummer=")+12, url.indexOf("&time"))+" erfolgreich gestartet!",Toast.LENGTH_SHORT).show();
+                    }
+                    else{
+                        Toast.makeText(StartActivity.this,"Beim Start von Startnummer "+url.substring(url.indexOf("startnummer=")+12, url.indexOf("&time"))+" ist ein Fehler aufgetreten!" +
+                                " Die Startzeit wurde gespeichert und wird bei einer Wiederherstellung der Verbindung automatisch übermittelt!",Toast.LENGTH_LONG).show();
+                        //um ggf. mit dem Daemon abzusenden
+                        anfragen.add(request);
+                    }
+                }
+            };
+            conn.execute("params");
+        }
+        else{
+            Toast.makeText(StartActivity.this,"Beim Start von Startnummer "+s.getSelectedItem().toString()+" ist ein Fehler aufgetreten!" +
+                    "Die Startzeit wurde gespeichert und wird bei einer Wiederherstellung der Verbindung automatisch übermittelt!",Toast.LENGTH_SHORT).show();
+        }
+    }
     /**
      * Speichert alle Anfragen, welche noch zu senden sind.
      */
     private final ArrayList<String> anfragen = new ArrayList<>();
     private Thread syncDaemon = new Thread(new Runnable() {
         @Override
-        public void run() {
+        public synchronized void run() {
             while (!Thread.currentThread().isInterrupted()){
             for(final String request : anfragen){
                 //Versuchen, die Anfrage zu versenden
@@ -182,8 +258,7 @@ public class StartActivity extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }
-        }
+        }}
     });
     /**
      * Wird beim Beenden des Activitys aufgerufen

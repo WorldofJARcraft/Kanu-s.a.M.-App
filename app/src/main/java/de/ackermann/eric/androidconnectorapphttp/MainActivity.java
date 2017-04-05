@@ -3,10 +3,13 @@ package de.ackermann.eric.androidconnectorapphttp;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -50,6 +53,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private String PREFS_NAME = "Strafen";
     private TextView[] tore;
+
+    /**
+     * Spielt ein kurzes Signal ab, wenn der Startbefehl eingegeben wurde.
+     */
+    private MediaPlayer player;
+    /**
+     * Aktion beim Klick auf den zurück-Button
+     * @param item der Button
+     * @return true oder false
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
     /**
      * Wird beim Start des Activitys ausgeführt
      *
@@ -61,6 +84,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         //Layout der Activity laden
         setContentView(R.layout.activity_main);
+
+        //anzeigen eines Buttons "Zurück"
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        //actionBar.setHomeAsUpIndicator(R.mipmap.ic_arrow_back_white_24dp);
+        actionBar.setDisplayShowHomeEnabled(true);
+        player = MediaPlayer.create(this, R.raw.okay);
+        player.setVolume(1f,1f);
         //gestartet-Attribut übernehmen
         this.gestartet = ConnectionActivity.gestartet;
         context = this.getApplicationContext();
@@ -104,19 +136,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         s.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                             @Override
                             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                                if(tore!=null)
                                 for(final TextView tor : tore){
                                     final String request = "http://"+ConnectionActivity.IP_ADRESSE+"/AndroidConnectorAppHTTPScripts/Abfrage_Strafzeiten.php?tor="+(Integer.parseInt((String)tor.getText())-1)+"&startnummer="+s.getSelectedItem().toString();
-                                    HTTP_Connection conn = new HTTP_Connection(request, true, ConnectionActivity.IP_ADRESSE, getBaseContext());
+                                    HTTP_Connection conn = new HTTP_Connection(request, true, ConnectionActivity.IP_ADRESSE, 1);
                                     conn.delegate = new AsyncResponse() {
                                         @Override
                                         public void processFinish(String output, long durationMillis, String url) {
-                                            if(output.equals("50")){
-                                                strafen[getTor(""+(Integer.parseInt(url.substring(url.indexOf("?tor=")+5, url.indexOf("startnummer")-1))+1))].setSelection(2);
+                                            if(output!=null) {
+                                                if (output.equals("50")) {
+                                                    strafen[getTor("" + (Integer.parseInt(url.substring(url.indexOf("?tor=") + 5, url.indexOf("startnummer") - 1)) + 1))].setSelection(2);
+                                                } else if (output.equals("2"))
+                                                    strafen[getTor("" + (Integer.parseInt(url.substring(url.indexOf("?tor=") + 5, url.indexOf("startnummer") - 1)) + 1))].setSelection(1);
+                                                else
+                                                    strafen[getTor("" + (Integer.parseInt(url.substring(url.indexOf("?tor=") + 5, url.indexOf("startnummer") - 1)) + 1))].setSelection(0);
                                             }
-                                            else if(output.equals("2"))
-                                                strafen[getTor(""+(Integer.parseInt(url.substring(url.indexOf("?tor=")+5, url.indexOf("startnummer")-1))+1))].setSelection(1);
-                                            else
-                                                strafen[getTor(""+(Integer.parseInt(url.substring(url.indexOf("?tor=")+5, url.indexOf("startnummer")-1))+1))].setSelection(0);
+                                            else{
+                                                strafen[getTor("" + (Integer.parseInt(url.substring(url.indexOf("?tor=") + 5, url.indexOf("startnummer") - 1)) + 1))].setSelection(0);
+                                            }
+
                                         }
                                     };
                                     conn.execute("params");
@@ -128,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             }
                         });
-                        s.setSelection(0);
+                        //s.setSelection(0);
                         /*View v = s.getSelectedView();
                         ((TextView) v).setTextColor(Color.BLACK);*/
                         //Startnummern ermittelt --> von nun an keine PHP-Ausgaben mehr zu verarbeiten, da von hier an nur noch Eintragungen in die Datenbank
@@ -563,6 +601,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     @Override
     public void onClick(View view) {
+        player.start();
         //wenn Wettkampf nicht gestartet...
         //falls keine Fehler aufgetreten sind und es noch Elemente im Spinner gibt...
         //if (s != null && s.getSelectedItem() != null && !(SQL_ERROR || CONNECTION_ERROR)) {
@@ -618,7 +657,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 final String request = "http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/zeit_eintragen.php?station=" + (Integer.parseInt(tor) - 1)
                         + "&startnummer=" + (Integer.parseInt(gewählte_Nummer)) + "&strafe=" + strafe;
                 //Anfragen werden gespeichert, um später löschen zu können
-                anfragen.add(request);
                 //"zeit_eintragen.php" aufrufen, um die aktuelle Zeit für die gewählte Startnummer zu nehmen
                 if (isNetworkAvailable()) {
                     //wenn ja: neue Instanz von HTTP_Connection erstellen, die das Script "Abfrage_Startnummern" ausführt und so alle Startnummern aus der Datenbank ausliest
@@ -632,11 +670,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             System.out.println("Antwort auf Strafzeitenanfrage: " + output);
                             if (output.equals("Erfolg")) {
                                 Toast.makeText(MainActivity.this, "Strafzeiten für Startnummer " + url.substring(url.indexOf("&startnummer=")+13,url.indexOf("&strafe")) + " erfolgreich eingetragen!", Toast.LENGTH_SHORT).show();
-                                //... --> Anfrage von Liste streichen
-                                anfragen.remove(request);
+
                             } else {
                                 Toast.makeText(MainActivity.this, "Beim Eintragen von Strafzeiten für Startnummer " + url.substring(url.indexOf("&startnummer=")+13,url.indexOf("&strafe")) + " ist ein Fehler aufgetreten!" +
                                         " Die Strafzeiten wurden gespeichert und werden bei einer Wiederherstellung der Verbindung automatisch übermittelt!", Toast.LENGTH_LONG).show();
+                                anfragen.add(request);
                             }
                         }
                     };
@@ -672,7 +710,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     private Thread syncDaemon = new Thread(new Runnable() {
         @Override
-        public void run() {
+        public synchronized void run() {
             while (!Thread.currentThread().isInterrupted()){
                 for(final String request : anfragen){
                     //Versuchen, die Anfrage zu versenden

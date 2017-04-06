@@ -8,8 +8,8 @@ android {
         applicationId "de.ackermann.eric.androidconnectorapphttp"
         minSdkVersion 10
         targetSdkVersion 24
-        versionCode 12
-        versionName "1.2"
+        versionCode 13
+        versionName "1.3"
     }
     buildTypes {
         release {

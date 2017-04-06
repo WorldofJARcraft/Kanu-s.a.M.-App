@@ -26,4 +26,9 @@
     </string-array>
     <string name="keine_vorige">Keine vorige Startnummer!</string>
     <string name="keine_folgende">Keine folgende Startnummer!</string>
+    <string name="kein_letzter_Eintrag">Es wurden keine weiteren Strafzeiten gefunden.</string>
+    <string name="letzte_eintraege">Ihre letzten Einträge:</string>
+    <string-array name="eintraege">
+        <item>Sie haben in der aktuellen Sitzung noch keine Strafzeiten eingetragen.</item>
+    </string-array>
 </resources>

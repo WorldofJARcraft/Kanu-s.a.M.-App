@@ -7,13 +7,17 @@ import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -84,7 +88,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         //Layout der Activity laden
         setContentView(R.layout.activity_main);
-
+        letzterEintrag =  (TextView) findViewById(R.id.letzter_Eintrag);
+        //Bildschirm an behalten
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         //anzeigen eines Buttons "Zurück"
         ActionBar actionBar = getSupportActionBar();
         actionBar.setHomeButtonEnabled(true);
@@ -594,6 +600,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     //private boolean abfrage_Startzeit = false;
     private final List<String> anfragen = new ArrayList<>();
+    private TextView letzterEintrag;
     /**
      * Wird aufgerufen, um die aktuelle Zeit für die gewählte Startnummer einzutragen; ist den "Zeit nehmen"-Button zugeordnet.
      *
@@ -601,7 +608,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     @Override
     public void onClick(View view) {
+        /**
+         * Speichert Srafnummer und ihre Strafen zur Ausgabe an den Benutzer
+         */
+        StringBuilder aktWerte = new StringBuilder("\nStartnummer "+arraySpinner[s.getSelectedItemPosition()]);
         player.start();
+        //Vibrieren
+        Vibrator vib = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        vib.vibrate(500);
         //wenn Wettkampf nicht gestartet...
         //falls keine Fehler aufgetreten sind und es noch Elemente im Spinner gibt...
         //if (s != null && s.getSelectedItem() != null && !(SQL_ERROR || CONNECTION_ERROR)) {
@@ -654,6 +668,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Prüfen, dass auch ja eine korrekte Zuordnung existiert
             if (Integer.parseInt(strafe) != -1) {
                 //Anfrage zusammensetzen
+                aktWerte.append("\nTor: "+tor+"; Strafe: "+strafe);
                 final String request = "http://" + ConnectionActivity.IP_ADRESSE + "/AndroidConnectorAppHTTPScripts/zeit_eintragen.php?station=" + (Integer.parseInt(tor) - 1)
                         + "&startnummer=" + (Integer.parseInt(gewählte_Nummer)) + "&strafe=" + strafe;
                 //Anfragen werden gespeichert, um später löschen zu können
@@ -707,6 +722,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //wurde der Wettkampf noch nicht gestartet, wird eine Warnung ausgegeben
 
         }
+        //Hinzufügen der letzten Strafwerte, damit man sieht, was man eingegeben hat
+        //aktuell vorhandene Strafen hinten ansetzen --> letzte eingegebene Strafe ist immer oben
+        aktWerte.append("\n").append(letzterEintrag.getText());
+        //Anzeige
+        letzterEintrag.setText(aktWerte.toString());
+
     }
     private Thread syncDaemon = new Thread(new Runnable() {
         @Override
